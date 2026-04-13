@@ -1,0 +1,31 @@
+name: Get Historical Temperature
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  fetch-temperature:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch temperature in Amiens on 1984-12-06 at 18h
+        run: python3 get_temperature.py | tee result.txt
+
+      - name: Commit result
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add result.txt
+          git diff --cached --quiet || git commit -m "chore: add temperature result for Amiens 1984-12-06"
+          git push

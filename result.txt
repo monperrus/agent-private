@@ -1,0 +1,4 @@
+Temperature in Amiens on 1984-12-06 at 18h: 6.6°C
+API: Open-Meteo Historical Weather API (https://archive-api.open-meteo.com/v1/archive)
+Data source: ERA5 reanalysis (ECMWF)
+Coordinates: latitude=49.8941, longitude=2.2958 (Amiens, France)

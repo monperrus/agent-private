@@ -71,7 +71,7 @@ export default function ReviewPage() {
               </button>
             )}
 
-            {(review.status === 'accepted' || review.status === 'invited') && submittingReviewId === review.id && (
+            {review.status === 'accepted' && submittingReviewId === review.id && (
               <SubmitReviewForm reviewId={review.id} onSubmitted={() => {
                 setSubmittingReviewId(null)
                 qc.invalidateQueries({ queryKey: ['my-reviews'] })

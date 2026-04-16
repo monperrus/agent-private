@@ -2,7 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from .config import settings
 from .database import engine, Base
 from .routers import auth, users, manuscripts, reviews, decisions, notifications, stats
@@ -10,9 +10,11 @@ from .routers import auth, users, manuscripts, reviews, decisions, notifications
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables
+    # Create tables and sequences
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Create submission number sequence if it doesn't exist
+        await conn.execute(text("CREATE SEQUENCE IF NOT EXISTS submission_number_seq START 1"))
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     yield
 

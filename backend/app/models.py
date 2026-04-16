@@ -4,11 +4,14 @@ from datetime import datetime
 from typing import Optional
 from sqlalchemy import (
     String, Text, DateTime, Boolean, Integer, Float,
-    ForeignKey, Enum as SAEnum, func
+    ForeignKey, Enum as SAEnum, func, Sequence
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from .database import Base
+
+# Database sequence for submission numbers — avoids race conditions
+submission_seq = Sequence("submission_number_seq", start=1)
 
 
 class UserRole(str, enum.Enum):

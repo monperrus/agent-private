@@ -4,21 +4,16 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 import aiofiles
 from ..database import get_db
-from ..models import User, Manuscript, ManuscriptFile, ManuscriptAuthor, ManuscriptStatus, UserRole, Notification
+from ..models import User, Manuscript, ManuscriptFile, ManuscriptAuthor, ManuscriptStatus, UserRole, Notification, submission_seq
 from ..schemas import ManuscriptCreate, ManuscriptOut, ManuscriptListOut, ManuscriptUpdate, AssignEditorRequest
 from ..auth import get_current_user
 from ..config import settings
 
 router = APIRouter(prefix="/api/manuscripts", tags=["manuscripts"])
-
-
-def generate_submission_number(count: int) -> str:
-    year = datetime.now().year
-    return f"MS-{year}-{count:04d}"
 
 
 async def notify_user(db: AsyncSession, user_id: uuid.UUID, title: str, message: str, notif_type: str, manuscript_id: uuid.UUID = None):
@@ -35,9 +30,12 @@ async def submit_manuscript(
 ):
     data = ManuscriptCreate.model_validate_json(manuscript_data)
 
-    # Count existing manuscripts for submission number
-    count_result = await db.execute(select(func.count(Manuscript.id)))
-    count = count_result.scalar() + 1
+    # Use a database sequence to generate unique submission numbers atomically
+    seq_result = await db.execute(text(f"SELECT nextval('{submission_seq.name}')"))
+    seq_num = seq_result.scalar()
+
+    year = datetime.now(timezone.utc).year
+    sub_number = f"MS-{year}-{seq_num:04d}"
 
     manuscript = Manuscript(
         title=data.title,
@@ -45,7 +43,7 @@ async def submit_manuscript(
         keywords=data.keywords,
         cover_letter=data.cover_letter,
         submitter_id=current_user.id,
-        submission_number=generate_submission_number(count),
+        submission_number=sub_number,
         status=ManuscriptStatus.submitted,
     )
     db.add(manuscript)

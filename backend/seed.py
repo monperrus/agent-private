@@ -40,7 +40,7 @@ async def create_admin():
         )
         session.add(admin)
         await session.commit()
-        print(f"Created admin user: {email} / {password}")
+        print(f"Admin user created: {email}")
         print("IMPORTANT: Change the password after first login!")
 
 

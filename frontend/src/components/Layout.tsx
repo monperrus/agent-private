@@ -88,7 +88,7 @@ export default function Layout() {
                   <span className="font-semibold">Notifications</span>
                   <button
                     onClick={() => {
-                      api.post('/notifications/read-all')
+                      api.post('/notifications/read-all').catch(() => {})
                       setShowNotifs(false)
                     }}
                     className="text-xs text-primary-600 hover:underline"
